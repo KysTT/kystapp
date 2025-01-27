@@ -53,14 +53,17 @@ function NavBar() {
         <Link to="/ExpensesTracker" className="[&.active]:font-bold">
           ExpensesTrackerIndex
         </Link>
-        <Link to="/ExpensesTracker/about" className="[&.active]:font-bold">
-          ExpensesTrackerAbout
-        </Link>
         <Link to="/ExpensesTracker/expenses" className="[&.active]:font-bold">
           ShowExpenses
         </Link>
-        <Link to="/ExpensesTracker/createExpense" className="[&.active]:font-bold">
+        <Link
+            to="/ExpensesTracker/createExpense"
+            className="[&.active]:font-bold"
+        >
           createExpense
+        </Link>
+        <Link to="/ExpensesTracker/about" className="[&.active]:font-bold">
+          ExpensesTrackerAbout
         </Link>
       </div>
     </>

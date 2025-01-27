@@ -6,8 +6,14 @@ services:
     ports:
       - "3000:3000"
     environment:
+      - KINDE_DOMAIN=${KINDE_DOMAIN}
+      - KINDE_CLIENT_ID=${KINDE_CLIENT_ID}
+      - KINDE_CLIENT_SECRET=${KINDE_CLIENT_SECRET}
+      - KINDE_REDIRECT_URI=${KINDE_REDIRECT_URI}
+      - KINDE_LOGOUT_REDIRECT_URI=${KINDE_LOGOUT_REDIRECT_URI}
       - NODE_ENV=production
-      - MONGODB_URI=mongodb://mongo:27017/mydatabase
+      - MONGODB_URI=${MONGODB_URI}
+      - STRIPE_KEY=${STRIPE_KEY}
     depends_on:
       - mongo
     # For development:

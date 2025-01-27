@@ -2,42 +2,50 @@ import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
 import { z } from 'zod'
 import { getUser } from "../kinde.ts"
+import { Expenses } from '../db/schema/expenses'
 
 const expenseSchema = z.object({
-    id: z.number().int().positive(),
+    id: z.string(),
     title: z.string(),
     amount: z.number().int().positive(),
 })
 
-type Expense = z.infer<typeof expenseSchema>
-
 const postSchema = expenseSchema.omit({id: true})
-
-const fakeExpenses: Expense[] = [
-    {id: 1, title: 'Expense 1', amount: 1},
-    {id: 2, title: 'Expense 2', amount: 10},
-    {id: 3, title: 'Expense 3', amount: 100},
-]
 
 export const expensesRoutes = new Hono()
     .get('/', getUser, async (c)=>{
-        return c.json({expenses: fakeExpenses})
+        const expenses = await Expenses.find({user_id: c.var.user.id})
+        return c.json({expenses: expenses})
     })
     .post('/', getUser, zValidator('json', postSchema) ,async (c)=>{
-        const expense = c.req.valid('json')
-        fakeExpenses.push({...expense, id:fakeExpenses.length + 1})
-        c.status(201)
+        const data = c.req.valid('json')
+        let new_expense_id = 1
+        const get_expense_id = await Expenses.find({},'expense_id').sort({ expense_id: -1 }).limit(1)
+        if (get_expense_id.length !== 0){
+            new_expense_id = get_expense_id[0].expense_id + 1
+        }
+        const expense = new Expenses({
+            expense_id: new_expense_id,
+            from: new Date().toISOString().slice(0, 19).replace('T', ' '),
+            user_id: c.var.user.id,
+            title: data.title,
+            amount: data.amount,
+        })
+        try{
+            await expense.save()
+            c.status(201)
+        }catch(err){
+            c.status(401)
+        }
         return c.json(expense)
     })
     .get('/totalSpent', getUser, async (c)=>{
-        const total = fakeExpenses.reduce((acc, cur) => acc + cur.amount, 0)
+        const expenses = await Expenses.find({user_id: c.var.user.id})
+        const total = expenses.reduce((acc, cur) => acc + cur.amount, 0)
         return c.json({total})
     })
-    .get('/:id{[0-9]+}', getUser, (c)=>{
-        const id = c.req.param('id')
-        return c.json({id: id})
-    })
-    .delete('/:id{[0-9]+}', getUser, (c)=>{
-        const id = c.req.param('id')
+    .delete('/:id{[0-9]+}', getUser, async (c)=>{
+        const id = Number(c.req.param('id'))
+        await Expenses.findOneAndDelete({expense_id: id})
         return c.json({id: id})
     })
