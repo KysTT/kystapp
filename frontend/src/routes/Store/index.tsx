@@ -1,0 +1,171 @@
+import {createFileRoute, Link} from '@tanstack/react-router'
+import {useMutation, useQuery} from "@tanstack/react-query";
+import {addProductToCart, api, userRoleQueryOptions} from "@/lib/api.ts";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from '@/components/ui/table'
+import { Skeleton } from "@/components/ui/skeleton"
+import {toast} from "sonner";
+import {Button} from "@/components/ui/button.tsx";
+import {Plus} from "lucide-react";
+
+function getRole() {
+    const { isPending, error, data } = useQuery(userRoleQueryOptions)
+    if (isPending) return 'loading'
+    if (error) return 'Error'
+    return data.role
+}
+
+async function getProducts() {
+    const res = await api.store.$get()
+    if (!res.ok) {
+        throw new Error('Something went wrong')
+    }
+    return await res.json()
+}
+
+export const Route = createFileRoute('/Store/')({
+  component: RouteComponent,
+})
+
+function RouteComponent() {
+    const userRole = getRole()
+    if (userRole === "admin"){
+        return (
+            <>
+                <NavBarAdmin/>
+                <RenderProducts />
+            </>
+        )
+    }
+    return (
+        <>
+            <NavBarUser />
+            <RenderProducts />
+        </>
+    )
+}
+
+function RenderProducts() {
+    const { isPending, error, data } = useQuery({
+        queryKey: ['getProducts'],
+        queryFn: getProducts,
+    })
+    if (error) return 'Error'
+    return(
+        <>
+            <div className="p-2 gap-4 m-auto max-w-screen-md">
+                <Table className="m-auto">
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead className="w-5">Id</TableHead>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Description</TableHead>
+                            <TableHead>Stock</TableHead>
+                            <TableHead>Price</TableHead>
+                            <TableHead></TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {isPending
+                            ? Array(3).fill(0).map((_, i)=>(
+                                <TableRow key={i}>
+                                    <TableCell>
+                                        <Skeleton className="h-5" />
+                                    </TableCell>
+                                    <TableCell>
+                                        <Skeleton className="h-5" />
+                                    </TableCell>
+                                    <TableCell>
+                                        <Skeleton className="h-5" />
+                                    </TableCell>
+                                    <TableCell>
+                                        <Skeleton className="h-5" />
+                                    </TableCell>
+                                    <TableCell>
+                                        <Skeleton className="h-5" />
+                                    </TableCell>
+                                    <TableCell>
+                                        <Skeleton className="h-5" />
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                            : data!.products.map(({product_id, name, description, stock, price})=>(
+                                <TableRow key={product_id}>
+                                    <TableCell>{product_id}</TableCell>
+                                    <TableCell>{name}</TableCell>
+                                    <TableCell>{description}</TableCell>
+                                    <TableCell>{stock}</TableCell>
+                                    <TableCell>{price}</TableCell>
+                                    <TableCell className="w-5">
+                                        <AddProductToCartButton json={product_id} />
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        }
+                    </TableBody>
+                </Table>
+            </div>
+        </>
+    )
+}
+
+function AddProductToCartButton(product_id: {json: number}) {
+    const mutation = useMutation({
+        mutationFn: addProductToCart,
+        onError: () => {
+            return toast('Failed to add to cart')
+        },
+        onSuccess: () => {
+            return toast("Successfully added product")
+        },
+    })
+    return (
+        <Button
+            disabled={mutation.isPending}
+            onClick={() => mutation.mutate(product_id)}
+            variant="outline"
+            size="icon"
+        >
+            <Plus />
+        </Button>
+    )
+}
+
+function NavBarAdmin() {
+    return (
+        <>
+            <div className="p-2 flex gap-4 mb-2">
+                <Link to="/Store" className="[&.active]:font-bold">
+                    Store
+                </Link>
+                <Link to="/Store/cart" className="[&.active]:font-bold">
+                    Cart
+                </Link>
+                <Link to="/Store/createProduct" className="[&.active]:font-bold">
+                    Create Product
+                </Link>
+            </div>
+        </>
+    )
+}
+
+function NavBarUser() {
+    return (
+        <>
+            <div className="p-2 flex gap-4 mb-2">
+                <Link to="/Store" className="[&.active]:font-bold">
+                    Store
+                </Link>
+                <Link to="/Store/cart" className="[&.active]:font-bold">
+                    Cart
+                </Link>
+            </div>
+        </>
+    )
+}

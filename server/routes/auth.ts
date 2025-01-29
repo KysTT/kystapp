@@ -33,6 +33,5 @@ export const authRoutes = new Hono()
     })
     .get("/userRole", getUser, async (c)=>{
         const findUser = await User.find({user_id: c.var.user.id}, 'role')
-        console.log(findUser[0].role)
         return c.json({ role: findUser[0].role })
     })

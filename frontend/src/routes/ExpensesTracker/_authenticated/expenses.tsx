@@ -12,11 +12,11 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { api, deleteExpense } from '@/lib/api'
 import { Button } from '@/components/ui/button'
-import { Trash } from "lucide-react"
+import { Trash } from 'lucide-react'
 import { toast } from 'sonner'
 
 export const Route = createFileRoute(
-  '/_authenticated/ExpensesTracker/expenses',
+  '/ExpensesTracker/_authenticated/expenses',
 )({
   component: Expenses,
 })
@@ -39,52 +39,57 @@ function Expenses() {
     <>
       <NavBar />
       <div className="p-2 gap-4 m-auto max-w-screen-sm">
-      <Table className="border-2 m-auto">
-        <TableCaption>A list of your expenses</TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-5">Id</TableHead>
-            <TableHead>Title</TableHead>
-            <TableHead>Amount</TableHead>
-            <TableHead></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {isPending ? (
+        <Table className="border-2 m-auto">
+          <TableCaption>A list of your expenses</TableCaption>
+          <TableHeader>
             <TableRow>
-              <TableCell>
-                <Skeleton className="h-5" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-5" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-5" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-5" />
-              </TableCell>
+              <TableHead className="w-5">Id</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead>Title</TableHead>
+              <TableHead>Amount</TableHead>
+              <TableHead></TableHead>
             </TableRow>
-          ) : (
-            data.expenses.map(({amount, expense_id, title}) => (
+          </TableHeader>
+          <TableBody>
+            {isPending ? (
               <TableRow>
-                <TableCell>{expense_id}</TableCell>
-                <TableCell>{title}</TableCell>
-                <TableCell>{amount}</TableCell>
-                <TableCell className="w-5">
-                  <DeleteExpenseButton id={expense_id}/>
+                <TableCell>
+                  <Skeleton className="h-5" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-5" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-5" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-5" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-5" />
                 </TableCell>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+            ) : (
+              data.expenses.map(({ amount, expense_id, date, title }) => (
+                <TableRow>
+                  <TableCell>{expense_id}</TableCell>
+                  <TableCell className="w-40">{date}</TableCell>
+                  <TableCell>{title}</TableCell>
+                  <TableCell className="w-32">{amount}</TableCell>
+                  <TableCell className="w-5">
+                    <DeleteExpenseButton id={expense_id} />
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
       </div>
     </>
   )
 }
 
-function DeleteExpenseButton({id}: { id: number }) {
+function DeleteExpenseButton({ id }: { id: number }) {
   const mutation = useMutation({
     mutationFn: deleteExpense,
     onError: () => {
@@ -92,15 +97,17 @@ function DeleteExpenseButton({id}: { id: number }) {
     },
     onSuccess: () => {
       return toast(`Successfully deleted expense ${id}`)
-    }
+    },
   })
 
-  return(
+  return (
     <Button
       disabled={mutation.isPending}
-      onClick={() => mutation.mutate({id})}
-      variant="outline" size="icon">
-      <Trash/>
+      onClick={() => mutation.mutate({ id })}
+      variant="outline"
+      size="icon"
+    >
+      <Trash />
     </Button>
   )
 }
@@ -120,9 +127,6 @@ function NavBar() {
           className="[&.active]:font-bold"
         >
           createExpense
-        </Link>
-        <Link to="/ExpensesTracker/about" className="[&.active]:font-bold">
-          ExpensesTrackerAbout
         </Link>
       </div>
     </>

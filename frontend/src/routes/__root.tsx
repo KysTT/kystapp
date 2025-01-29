@@ -16,17 +16,20 @@ function Root() {
         <>
             <div className="p-2 flex gap-4 m-auto">
                 <Link to="/" className="[&.active]:font-bold">
-                        Home
+                    Home
                 </Link>
 
                 <Link to="/profile" className="[&.active]:font-bold">
-                        Profile
+                    Profile
                 </Link>
                 <Link to="/ExpensesTracker" className="[&.active]:font-bold">
-                        ExpensesTracker
+                    ExpensesTracker
+                </Link>
+                <Link to="/Store" className="[&.active]:font-bold">
+                    Store
                 </Link>
                 <Link to="/about" className="[&.active]:font-bold">
-                        About
+                    About
                 </Link>
             </div>
             <hr />

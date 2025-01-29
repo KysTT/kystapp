@@ -8,6 +8,7 @@ const expenseSchema = z.object({
     id: z.string(),
     title: z.string(),
     amount: z.number().int().positive(),
+    date: z.string(),
 })
 
 const postSchema = expenseSchema.omit({id: true})
@@ -17,7 +18,7 @@ export const expensesRoutes = new Hono()
         const expenses = await Expenses.find({user_id: c.var.user.id})
         return c.json({expenses: expenses})
     })
-    .post('/', getUser, zValidator('json', postSchema) ,async (c)=>{
+    .post('/', getUser, zValidator('json', postSchema), async (c)=>{
         const data = c.req.valid('json')
         let new_expense_id = 1
         const get_expense_id = await Expenses.find({},'expense_id').sort({ expense_id: -1 }).limit(1)
@@ -26,7 +27,7 @@ export const expensesRoutes = new Hono()
         }
         const expense = new Expenses({
             expense_id: new_expense_id,
-            from: new Date().toISOString().slice(0, 19).replace('T', ' '),
+            date: data.date,
             user_id: c.var.user.id,
             title: data.title,
             amount: data.amount,

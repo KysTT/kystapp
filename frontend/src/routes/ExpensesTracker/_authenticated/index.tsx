@@ -1,4 +1,4 @@
-import {createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 
 import {
   Card,
@@ -10,7 +10,7 @@ import {
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/lib/api'
 
-export const Route = createFileRoute('/_authenticated/ExpensesTracker/')({
+export const Route = createFileRoute('/ExpensesTracker/_authenticated/')({
   component: ExpensesTrackerIndex,
 })
 
@@ -57,13 +57,10 @@ function NavBar() {
           ShowExpenses
         </Link>
         <Link
-            to="/ExpensesTracker/createExpense"
-            className="[&.active]:font-bold"
+          to="/ExpensesTracker/createExpense"
+          className="[&.active]:font-bold"
         >
           createExpense
-        </Link>
-        <Link to="/ExpensesTracker/about" className="[&.active]:font-bold">
-          ExpensesTrackerAbout
         </Link>
       </div>
     </>
