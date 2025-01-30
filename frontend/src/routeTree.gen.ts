@@ -21,6 +21,7 @@ import { Route as AuthenticatedProfileImport } from './routes/_authenticated/pro
 import { Route as StoreAuthenticatedImport } from './routes/Store/_authenticated'
 import { Route as ExpensesTrackerAuthenticatedImport } from './routes/ExpensesTracker/_authenticated'
 import { Route as ExpensesTrackerAuthenticatedIndexImport } from './routes/ExpensesTracker/_authenticated/index'
+import { Route as StoreAuthenticatedEditProductImport } from './routes/Store/_authenticated/editProduct'
 import { Route as StoreAuthenticatedCreateProductImport } from './routes/Store/_authenticated/createProduct'
 import { Route as StoreAuthenticatedCartImport } from './routes/Store/_authenticated/cart'
 import { Route as ExpensesTrackerAuthenticatedExpensesImport } from './routes/ExpensesTracker/_authenticated/expenses'
@@ -90,6 +91,13 @@ const ExpensesTrackerAuthenticatedIndexRoute =
     id: '/',
     path: '/',
     getParentRoute: () => ExpensesTrackerAuthenticatedRoute,
+  } as any)
+
+const StoreAuthenticatedEditProductRoute =
+  StoreAuthenticatedEditProductImport.update({
+    id: '/editProduct',
+    path: '/editProduct',
+    getParentRoute: () => StoreAuthenticatedRoute,
   } as any)
 
 const StoreAuthenticatedCreateProductRoute =
@@ -214,6 +222,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StoreAuthenticatedCreateProductImport
       parentRoute: typeof StoreAuthenticatedImport
     }
+    '/Store/_authenticated/editProduct': {
+      id: '/Store/_authenticated/editProduct'
+      path: '/editProduct'
+      fullPath: '/Store/editProduct'
+      preLoaderRoute: typeof StoreAuthenticatedEditProductImport
+      parentRoute: typeof StoreAuthenticatedImport
+    }
     '/ExpensesTracker/_authenticated/': {
       id: '/ExpensesTracker/_authenticated/'
       path: '/'
@@ -275,11 +290,13 @@ const ExpensesTrackerRouteWithChildren = ExpensesTrackerRoute._addFileChildren(
 interface StoreAuthenticatedRouteChildren {
   StoreAuthenticatedCartRoute: typeof StoreAuthenticatedCartRoute
   StoreAuthenticatedCreateProductRoute: typeof StoreAuthenticatedCreateProductRoute
+  StoreAuthenticatedEditProductRoute: typeof StoreAuthenticatedEditProductRoute
 }
 
 const StoreAuthenticatedRouteChildren: StoreAuthenticatedRouteChildren = {
   StoreAuthenticatedCartRoute: StoreAuthenticatedCartRoute,
   StoreAuthenticatedCreateProductRoute: StoreAuthenticatedCreateProductRoute,
+  StoreAuthenticatedEditProductRoute: StoreAuthenticatedEditProductRoute,
 }
 
 const StoreAuthenticatedRouteWithChildren =
@@ -309,6 +326,7 @@ export interface FileRoutesByFullPath {
   '/ExpensesTracker/expenses': typeof ExpensesTrackerAuthenticatedExpensesRoute
   '/Store/cart': typeof StoreAuthenticatedCartRoute
   '/Store/createProduct': typeof StoreAuthenticatedCreateProductRoute
+  '/Store/editProduct': typeof StoreAuthenticatedEditProductRoute
   '/ExpensesTracker/': typeof ExpensesTrackerAuthenticatedIndexRoute
 }
 
@@ -323,6 +341,7 @@ export interface FileRoutesByTo {
   '/ExpensesTracker/expenses': typeof ExpensesTrackerAuthenticatedExpensesRoute
   '/Store/cart': typeof StoreAuthenticatedCartRoute
   '/Store/createProduct': typeof StoreAuthenticatedCreateProductRoute
+  '/Store/editProduct': typeof StoreAuthenticatedEditProductRoute
 }
 
 export interface FileRoutesById {
@@ -340,6 +359,7 @@ export interface FileRoutesById {
   '/ExpensesTracker/_authenticated/expenses': typeof ExpensesTrackerAuthenticatedExpensesRoute
   '/Store/_authenticated/cart': typeof StoreAuthenticatedCartRoute
   '/Store/_authenticated/createProduct': typeof StoreAuthenticatedCreateProductRoute
+  '/Store/_authenticated/editProduct': typeof StoreAuthenticatedEditProductRoute
   '/ExpensesTracker/_authenticated/': typeof ExpensesTrackerAuthenticatedIndexRoute
 }
 
@@ -357,6 +377,7 @@ export interface FileRouteTypes {
     | '/ExpensesTracker/expenses'
     | '/Store/cart'
     | '/Store/createProduct'
+    | '/Store/editProduct'
     | '/ExpensesTracker/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -370,6 +391,7 @@ export interface FileRouteTypes {
     | '/ExpensesTracker/expenses'
     | '/Store/cart'
     | '/Store/createProduct'
+    | '/Store/editProduct'
   id:
     | '__root__'
     | '/'
@@ -385,6 +407,7 @@ export interface FileRouteTypes {
     | '/ExpensesTracker/_authenticated/expenses'
     | '/Store/_authenticated/cart'
     | '/Store/_authenticated/createProduct'
+    | '/Store/_authenticated/editProduct'
     | '/ExpensesTracker/_authenticated/'
   fileRoutesById: FileRoutesById
 }
@@ -461,7 +484,8 @@ export const routeTree = rootRoute
       "parent": "/Store",
       "children": [
         "/Store/_authenticated/cart",
-        "/Store/_authenticated/createProduct"
+        "/Store/_authenticated/createProduct",
+        "/Store/_authenticated/editProduct"
       ]
     },
     "/_authenticated/profile": {
@@ -486,6 +510,10 @@ export const routeTree = rootRoute
     },
     "/Store/_authenticated/createProduct": {
       "filePath": "Store/_authenticated/createProduct.tsx",
+      "parent": "/Store/_authenticated"
+    },
+    "/Store/_authenticated/editProduct": {
+      "filePath": "Store/_authenticated/editProduct.tsx",
       "parent": "/Store/_authenticated"
     },
     "/ExpensesTracker/_authenticated/": {

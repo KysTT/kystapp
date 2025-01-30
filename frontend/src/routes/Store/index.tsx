@@ -150,6 +150,9 @@ function NavBarAdmin() {
                 <Link to="/Store/createProduct" className="[&.active]:font-bold">
                     Create Product
                 </Link>
+                <Link to="/Store/editProduct" className="[&.active]:font-bold">
+                    Edit Product
+                </Link>
             </div>
         </>
     )

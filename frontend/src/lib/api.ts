@@ -34,30 +34,34 @@ export const userRoleQueryOptions = queryOptions({
     staleTime: Infinity
 })
 
-export async function deleteExpense({ id }: { id: number }) {
-    const res = await api.expenses[":id{[0-9]+}"].$delete({param: {id: id.toString()}})
+export async function deleteExpense({ expense_id }: { expense_id: number }) {
+    const res = await api.expenses[":id{[0-9]+}"].$delete({param: {id: expense_id.toString()}})
     if (!res.ok){
         throw new Error('Something went wrong')
     }
+    return res.json()
 }
 
 export async function addProductToCart(product_id: {json: any}) {
-    const res = await api.store["addToCart"].$post(product_id)
+    const res = await api.store["addToCart"].$put(product_id)
     if (!res.ok){
         throw new Error('Something went wrong')
     }
+    return res.json()
 }
 
 export async function subtractProductFromCart(product_id: {json: any}) {
-    const res = await api.store["subtractFromCart"].$post(product_id)
+    const res = await api.store["subtractFromCart"].$put(product_id)
     if (!res.ok){
         throw new Error('Something went wrong')
     }
+    return res.json()
 }
 
 export async function removeProductFromCart(product_id: any) {
-    const res = await api.store["removeFromCart"].$post(product_id)
+    const res = await api.store["removeFromCart"].$delete(product_id)
     if (!res.ok){
         throw new Error('Something went wrong')
     }
+    return res.json()
 }

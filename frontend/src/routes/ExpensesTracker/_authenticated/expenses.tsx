@@ -14,6 +14,7 @@ import { api, deleteExpense } from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Trash } from 'lucide-react'
 import { toast } from 'sonner'
+import {useState} from "react";
 
 export const Route = createFileRoute(
   '/ExpensesTracker/_authenticated/expenses',
@@ -30,11 +31,30 @@ async function getAllExpenses() {
 }
 
 function Expenses() {
+  const [expenses, setExpenses] = useState([])
   const { isPending, error, data } = useQuery({
     queryKey: ['getAllExpenses'],
     queryFn: getAllExpenses,
   })
   if (error) return 'Error'
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteExpense,
+    onError: () => {
+      return toast(`Failed to delete expense`)
+    },
+    onSuccess: (data) => {
+      setExpenses(data)
+      return toast(`Successfully deleted expense`)
+    },
+  })
+
+  if (expenses.length === 0) {
+    if ( !isPending) {
+      setExpenses(data)
+    }
+  }
+
   return (
     <>
       <NavBar />
@@ -70,14 +90,21 @@ function Expenses() {
                 </TableCell>
               </TableRow>
             ) : (
-              data.expenses.map(({ amount, expense_id, date, title }) => (
-                <TableRow>
+                expenses.map(({ amount, expense_id, date, title }, index) => (
+                <TableRow key={index}>
                   <TableCell>{expense_id}</TableCell>
                   <TableCell className="w-40">{date}</TableCell>
                   <TableCell>{title}</TableCell>
                   <TableCell className="w-32">{amount}</TableCell>
                   <TableCell className="w-5">
-                    <DeleteExpenseButton id={expense_id} />
+                    <Button
+                        disabled={deleteMutation.isPending}
+                        onClick={() => deleteMutation.mutate({expense_id})}
+                        variant="outline"
+                        size="icon"
+                    >
+                      <Trash />
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))
@@ -86,29 +113,6 @@ function Expenses() {
         </Table>
       </div>
     </>
-  )
-}
-
-function DeleteExpenseButton({ id }: { id: number }) {
-  const mutation = useMutation({
-    mutationFn: deleteExpense,
-    onError: () => {
-      return toast(`Failed to delete expense ${id}`)
-    },
-    onSuccess: () => {
-      return toast(`Successfully deleted expense ${id}`)
-    },
-  })
-
-  return (
-    <Button
-      disabled={mutation.isPending}
-      onClick={() => mutation.mutate({ id })}
-      variant="outline"
-      size="icon"
-    >
-      <Trash />
-    </Button>
   )
 }
 

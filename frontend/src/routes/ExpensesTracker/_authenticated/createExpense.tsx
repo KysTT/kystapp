@@ -25,8 +25,8 @@ export const Route = createFileRoute(
 
 function CreateExpense() {
     const [date, setDate] = React.useState<Date>()
-    let currDate = Date.toString()
-    currDate = currDate.slice(0, currDate.search('00:00:00'))
+    let currDate = new Date().toString()
+    currDate = currDate.slice(0, currDate.search(':')-2)
   const form = useForm({
     defaultValues: {
         title: '',

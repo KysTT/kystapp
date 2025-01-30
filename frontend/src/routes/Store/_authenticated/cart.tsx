@@ -19,6 +19,7 @@ import {Skeleton} from "@/components/ui/skeleton"
 import {toast} from "sonner";
 import {Button} from "@/components/ui/button.tsx";
 import {Trash, PlusIcon, MinusIcon} from "lucide-react";
+import {useState} from "react";
 
 async function getCart() {
     const res = await api.store['cart'].$get()
@@ -58,11 +59,49 @@ function RouteComponent() {
 }
 
 function RenderCart() {
+    const [cart , setCart] = useState([])
+
+    const subtractMutation = useMutation({
+        mutationFn: subtractProductFromCart,
+        onError: () => {
+            return toast('Failed')
+        },
+        onSuccess: (data) => {
+            setCart(data)
+        },
+    })
+
+    const addMutation = useMutation({
+        mutationFn: addProductToCart,
+        onError: () => {
+            return toast('Failed')
+        },
+        onSuccess: (data) => {
+            setCart(data)
+        },
+    })
+
+    const deleteMutation = useMutation({
+        mutationFn: removeProductFromCart,
+        onError: () => {
+            return toast('Failed to remove product from cart')
+        },
+        onSuccess: (data) => {
+            setCart(data)
+        },
+    })
+
     const {isPending, error, data} = useQuery({
         queryKey: ['getCart'],
         queryFn: getCart,
     })
     if (error) return 'Error'
+    if (cart.length === 0) {
+        if ( !isPending) {
+            setCart(data)
+
+        }
+    }
     return (
         <>
             <div className="p-2 gap-4 m-auto max-w-screen-md">
@@ -102,18 +141,48 @@ function RenderCart() {
                                         <Skeleton className="h-5"/>
                                     </TableCell>
                                 </TableRow>
-                            )) : data.map(({ product, quantity }) => (
-                                <TableRow>
+                            )) : cart.map(({ product, quantity }, index) => (
+                                <TableRow key={index}>
                                     <TableCell>{product.name}</TableCell>
                                     <TableCell>{product.price}</TableCell>
                                     <TableCell>
-                                        <SubtractQuantityButton json={[product.product_id, quantity]}/>
+                                        <Button
+                                            disabled={quantity === 1}
+                                            onClick={() => subtractMutation.mutate({json: product.product_id})}
+                                            variant="ghost"
+                                            size="icon"
+                                            className="w-6 h-6 mr-2"
+                                        >
+                                            <MinusIcon/>
+                                        </Button>
                                         {quantity}
-                                        <AddQuantityButton json={[product.product_id, quantity, product.stock]}/>
+                                        <Button
+                                            key={index}
+                                            disabled={quantity === product.stock}
+                                            onClick={() => {
+                                                addMutation.mutate({json: product.product_id})
+
+                                            }}
+                                            variant="ghost"
+                                            size="icon"
+                                            className="w-6 h-6 ml-2"
+                                        >
+                                            <PlusIcon/>
+                                        </Button>
                                     </TableCell>
                                     <TableCell>{product.price * quantity}</TableCell>
                                     <TableCell>
-                                        <DeleteProductFromCartButton json={product.product_id}/>
+                                        <Button
+                                            disabled={deleteMutation.isPending}
+                                            onClick={() => {
+                                                deleteMutation.mutate({json: product.product_id})
+                                            }}
+                                            variant="ghost"
+                                            size="icon"
+                                            className="w-8 h-8"
+                                        >
+                                            <Trash/>
+                                        </Button>
                                     </TableCell>
                                 </TableRow>
                             ))
@@ -125,84 +194,9 @@ function RenderCart() {
     )
 }
 
-function DeleteProductFromCartButton(product_id: { json: number }) {
-    const mutation = useMutation({
-        mutationFn: removeProductFromCart,
-        onError: () => {
-            return toast('Failed to remove product from cart')
-        },
-        onSuccess: () => {
-            return toast('Successfully removed')
-        },
-    })
-
-    return (
-        <Button
-            disabled={mutation.isPending}
-            onClick={() => mutation.mutate(product_id)}
-            variant="outline"
-            size="icon"
-            className="w-6 h-6"
-        >
-            <Trash/>
-        </Button>
-    )
-}
-
-function SubtractQuantityButton(input: { json: any[] }) {
-    const product_id = input.json[0]
-    const quantity = input.json[1]
-    const mutation = useMutation({
-        mutationFn: subtractProductFromCart,
-        onError: () => {
-            return toast('Failed')
-        },
-        onSuccess: () => {
-            return toast("Success")
-        },
-    })
-    return (
-        <>
-            <Button
-                disabled={Number(quantity) === 1}
-                onClick={() => mutation.mutate({json: product_id})}
-                variant="ghost"
-                size="icon"
-                className="w-6 h-6 mr-2"
-            >
-                <MinusIcon/>
-            </Button>
-        </>
-    )
-}
-
-function AddQuantityButton(input: { json: any[] }) {
-    const product_id = input.json[0]
-    const quantity = input.json[1]
-    const stock = input.json[2]
-    const mutation = useMutation({
-        mutationFn: addProductToCart,
-        onError: () => {
-            return toast('Failed to add to cart')
-        },
-        onSuccess: () => {
-            return toast("Successfully added product")
-        },
-    })
-    return (
-        <>
-            <Button
-                disabled={quantity === stock}
-                onClick={() => mutation.mutate({json: product_id})}
-                variant="ghost"
-                size="icon"
-                className="w-6 h-6 ml-2"
-            >
-                <PlusIcon/>
-            </Button>
-        </>
-    )
-}
+// function CheckoutButton(input: { json: any[] }) {
+//
+// }
 
 function NavBarAdmin() {
     return (
@@ -216,6 +210,9 @@ function NavBarAdmin() {
                 </Link>
                 <Link to="/Store/createProduct" className="[&.active]:font-bold">
                     Create Product
+                </Link>
+                <Link to="/Store/editProduct" className="[&.active]:font-bold">
+                    Edit Product
                 </Link>
             </div>
         </>

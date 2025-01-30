@@ -16,7 +16,7 @@ const postSchema = expenseSchema.omit({id: true})
 export const expensesRoutes = new Hono()
     .get('/', getUser, async (c)=>{
         const expenses = await Expenses.find({user_id: c.var.user.id})
-        return c.json({expenses: expenses})
+        return c.json(expenses)
     })
     .post('/', getUser, zValidator('json', postSchema), async (c)=>{
         const data = c.req.valid('json')
@@ -47,6 +47,7 @@ export const expensesRoutes = new Hono()
     })
     .delete('/:id{[0-9]+}', getUser, async (c)=>{
         const id = Number(c.req.param('id'))
-        await Expenses.findOneAndDelete({expense_id: id})
-        return c.json({id: id})
+        await Expenses.findOneAndDelete({expense_id: id, user_id: c.var.user.id})
+        const expenses = await Expenses.find({user_id: c.var.user.id})
+        return c.json(expenses)
     })

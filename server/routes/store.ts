@@ -7,7 +7,7 @@ import { Cart } from "../db/schema/cart"
 import { Product } from "../db/schema/product"
 
 const productSchema = z.object({
-    id: z.string(),
+    product_id: z.number(),
     name: z.string(),
     description: z.string(),
     stock: z.number().int().nonnegative(),
@@ -16,7 +16,7 @@ const productSchema = z.object({
     image_url: z.string(),
 })
 
-const productPostSchema = productSchema.omit({ id: true })
+const productPostSchema = productSchema.omit({ product_id: true })
 
 const cartPostSchema = z.any()
 
@@ -61,6 +61,30 @@ export const storeRoutes = new Hono()
         }
         return c.json(product)
     })
+    .get('/:id{[0-9]+}',getUser, async (c) => {
+        const _id = Number(c.req.param('id'))
+        const product = await Product.findOne({product_id: _id})
+        if (!product){
+            c.status(400)
+            return c.json({})
+        }
+        return c.json({product: product})
+    })
+    .put('/:id{[0-9]+}', getUser, zValidator('json', productPostSchema), async(c)=>{
+        const data = c.req.valid('json')
+        const product_id = Number(c.req.param('id'))
+        const filter = {product_id: product_id}
+        const update = {
+            name: data.name,
+            description: data.description,
+            stock: data.stock,
+            price: data.price,
+            category: data.category,
+            image_url: data.image_url
+        }
+        const product = await Product.findOneAndUpdate(filter, update, { new: true })
+        return c.json({product: product})
+    })
     .get('/cart', getUser, async (c) => {
         const mongoUser = await User.findOne({user_id: c.var.user.id})
         let cart = await Cart.findOne({user_id: mongoUser!._id})
@@ -75,7 +99,7 @@ export const storeRoutes = new Hono()
         }
         return c.json(resultCart)
     })
-    .post('/addToCart', getUser, zValidator('json', cartPostSchema), async (c) => {
+    .put('/addToCart', getUser, zValidator('json', cartPostSchema), async (c) => {
         const _id = c.req.valid('json')
         const {product_id, user_id} = await getUserProductId(_id, c.var.user.id)
         if (product_id === null || user_id === null){
@@ -101,11 +125,18 @@ export const storeRoutes = new Hono()
             c.status(201)
         }catch (err){
             c.status(401)
+            return c.json({})
+        }
+        let resultCart: Object[] = []
+        for (const p of cart.products) {
+            const product = await Product.findOne({_id: p.product_id})
+            if (product) resultCart.push({product: product, quantity: p.quantity})
         }
 
-        return c.json({cart: cart})
+        console.log(resultCart)
+        return c.json(resultCart)
     })
-    .post('/subtractFromCart', getUser, zValidator('json', cartPostSchema), async (c) => {
+    .put('/subtractFromCart', getUser, zValidator('json', cartPostSchema), async (c) => {
         const _id = c.req.valid('json')
         const {product_id, user_id} = await getUserProductId(_id, c.var.user.id)
         if (product_id === null || user_id === null){
@@ -132,11 +163,18 @@ export const storeRoutes = new Hono()
             c.status(201)
         }catch (err){
             c.status(401)
+            return c.json({})
+        }
+        let resultCart: Object[] = []
+        for (const p of cart.products) {
+            const product = await Product.findOne({_id: p.product_id})
+            if (product) resultCart.push({product: product, quantity: p.quantity})
         }
 
-        return c.json({cart: cart})
+        console.log(resultCart)
+        return c.json(resultCart)
     })
-    .post('/removeFromCart', getUser, zValidator('json', cartPostSchema), async (c) => {
+    .delete('/removeFromCart', getUser, zValidator('json', cartPostSchema), async (c) => {
         const _id = c.req.valid('json')
         const {product_id, user_id} = await getUserProductId(_id, c.var.user.id)
         if (product_id === null || user_id === null){
@@ -158,12 +196,11 @@ export const storeRoutes = new Hono()
             return c.json({})
         }
 
-        try{
-            await cart.save()
-            c.status(201)
-        }catch (err){
-            c.status(401)
+        let resultCart: Object[] = []
+        for (const p of cart.products) {
+            const product = await Product.findOne({_id: p.product_id})
+            if (product) resultCart.push({product: product, quantity: p.quantity})
         }
 
-        return c.json({product_id: product_id})
+        return c.json(resultCart)
     })
