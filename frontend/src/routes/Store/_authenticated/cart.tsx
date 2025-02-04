@@ -5,7 +5,8 @@ import {
     api,
     removeProductFromCart,
     subtractProductFromCart,
-    userRoleQueryOptions
+    userRoleQueryOptions,
+    checkout
 } from "@/lib/api.ts";
 import {
     Table,
@@ -22,6 +23,7 @@ import {Trash, PlusIcon, MinusIcon} from "lucide-react";
 import {useState} from "react";
 
 async function getCart() {
+    console.log('getting cart')
     const res = await api.store['cart'].$get()
     if (!res.ok) {
         throw new Error('Something went wrong')
@@ -35,9 +37,7 @@ export const Route = createFileRoute('/Store/_authenticated/cart')({
 
 function getRole() {
     const {isPending, error, data} = useQuery(userRoleQueryOptions)
-    if (isPending) return 'loading'
-    if (error) return 'Error'
-    return data.role
+    if (!isPending && !error) return data
 }
 
 function RouteComponent() {
@@ -60,6 +60,7 @@ function RouteComponent() {
 
 function RenderCart() {
     const [cart , setCart] = useState([])
+    let afterDelete = false, newData = false
 
     const subtractMutation = useMutation({
         mutationFn: subtractProductFromCart,
@@ -68,6 +69,7 @@ function RenderCart() {
         },
         onSuccess: (data) => {
             setCart(data)
+            newData = true
         },
     })
 
@@ -78,6 +80,7 @@ function RenderCart() {
         },
         onSuccess: (data) => {
             setCart(data)
+            newData = true
         },
     })
 
@@ -88,6 +91,20 @@ function RenderCart() {
         },
         onSuccess: (data) => {
             setCart(data)
+            newData = true
+            afterDelete = true
+        },
+    })
+
+    const checkoutMutation = useMutation({
+        mutationFn: checkout,
+        onError: () => {
+            return toast('Failed to checkout')
+        },
+        onSuccess: (data) => {
+            setCart(data)
+            newData = true
+            return toast('Checkout successful')
         },
     })
 
@@ -96,12 +113,28 @@ function RenderCart() {
         queryFn: getCart,
     })
     if (error) return 'Error'
-    if (cart.length === 0) {
-        if ( !isPending) {
-            setCart(data)
 
+    if ( !isPending ) {
+        if (data.length !== 0 && cart.length === 0) {
+            newData = true
         }
     }
+
+    if (newData){
+        if ( cart.length === 0 && afterDelete) {
+            setCart([])
+            afterDelete = false
+        }
+        if ( !isPending ) {
+            if ( data.length !== 0 ) {
+                newData = false
+                setCart(data)
+                console.log('set data')
+            }
+        }
+        newData = false
+    }
+
     return (
         <>
             <div className="p-2 gap-4 m-auto max-w-screen-md">
@@ -147,7 +180,7 @@ function RenderCart() {
                                     <TableCell>{product.price}</TableCell>
                                     <TableCell>
                                         <Button
-                                            disabled={quantity === 1}
+                                            disabled={quantity <= 1}
                                             onClick={() => subtractMutation.mutate({json: product.product_id})}
                                             variant="ghost"
                                             size="icon"
@@ -158,11 +191,8 @@ function RenderCart() {
                                         {quantity}
                                         <Button
                                             key={index}
-                                            disabled={quantity === product.stock}
-                                            onClick={() => {
-                                                addMutation.mutate({json: product.product_id})
-
-                                            }}
+                                            disabled={quantity >= product.stock}
+                                            onClick={() => addMutation.mutate({json: product.product_id})}
                                             variant="ghost"
                                             size="icon"
                                             className="w-6 h-6 ml-2"
@@ -185,18 +215,27 @@ function RenderCart() {
                                         </Button>
                                     </TableCell>
                                 </TableRow>
-                            ))
+                                )
+                            )
                         }
                     </TableBody>
                 </Table>
+                <div className="mt-4">
+                    {cart.length !== 0? (
+                        <Button
+                            disabled={checkoutMutation.isPending}
+                            onClick={() => {
+                                checkoutMutation.mutate({json: cart})
+                            }}
+                        >
+                            Checkout
+                        </Button>
+                    ):(<></>)}
+                </div>
             </div>
         </>
     )
 }
-
-// function CheckoutButton(input: { json: any[] }) {
-//
-// }
 
 function NavBarAdmin() {
     return (

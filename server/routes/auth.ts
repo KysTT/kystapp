@@ -32,6 +32,28 @@ export const authRoutes = new Hono()
         return c.json({ user })
     })
     .get("/userRole", getUser, async (c)=>{
-        const findUser = await User.find({user_id: c.var.user.id}, 'role')
-        return c.json({ role: findUser[0].role })
+        const findUser = await User.findOne({user_id: c.var.user.id})
+        if (!findUser){
+            c.status(400)
+            return c.json({})
+        }
+        return c.json(findUser.role)
+    })
+    .put("/userRole", getUser, async (c)=>{
+        const findUser = await User.findOne({user_id: c.var.user.id})
+        if (!findUser){
+            c.status(400)
+            return c.json({})
+        }
+
+        findUser.role === "admin"? findUser.role = "user" : findUser.role = "admin"
+
+        try{
+            await findUser.save()
+            c.status(200)
+            return c.json(findUser.role)
+        } catch (error) {
+            c.status(400)
+            return c.json({})
+        }
     })

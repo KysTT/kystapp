@@ -16,9 +16,7 @@ import {Plus} from "lucide-react";
 
 function getRole() {
     const { isPending, error, data } = useQuery(userRoleQueryOptions)
-    if (isPending) return 'loading'
-    if (error) return 'Error'
-    return data.role
+    if (!isPending && !error) return data
 }
 
 async function getProducts() {
@@ -57,6 +55,17 @@ function RenderProducts() {
         queryFn: getProducts,
     })
     if (error) return 'Error'
+
+    const mutation = useMutation({
+        mutationFn: addProductToCart,
+        onError: () => {
+            return toast('Failed to add to cart')
+        },
+        onSuccess: () => {
+            return toast("Successfully added product")
+        },
+    })
+
     return(
         <>
             <div className="p-2 gap-4 m-auto max-w-screen-md">
@@ -103,7 +112,14 @@ function RenderProducts() {
                                     <TableCell>{stock}</TableCell>
                                     <TableCell>{price}</TableCell>
                                     <TableCell className="w-5">
-                                        <AddProductToCartButton json={product_id} />
+                                        <Button
+                                            disabled={mutation.isPending || stock === 0}
+                                            onClick={() => mutation.mutate({json: product_id})}
+                                            variant="outline"
+                                            size="icon"
+                                        >
+                                            <Plus />
+                                        </Button>
                                     </TableCell>
                                 </TableRow>
                             ))
@@ -112,28 +128,6 @@ function RenderProducts() {
                 </Table>
             </div>
         </>
-    )
-}
-
-function AddProductToCartButton(product_id: {json: number}) {
-    const mutation = useMutation({
-        mutationFn: addProductToCart,
-        onError: () => {
-            return toast('Failed to add to cart')
-        },
-        onSuccess: () => {
-            return toast("Successfully added product")
-        },
-    })
-    return (
-        <Button
-            disabled={mutation.isPending}
-            onClick={() => mutation.mutate(product_id)}
-            variant="outline"
-            size="icon"
-        >
-            <Plus />
-        </Button>
     )
 }
 

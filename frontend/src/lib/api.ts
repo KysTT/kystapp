@@ -20,7 +20,7 @@ export const userQueryOptions = queryOptions({
     staleTime: Infinity
 })
 
-async function getCurrentUserRole() {
+export async function getCurrentUserRole() {
     const res = await api.userRole.$get()
     if (!res.ok){
         throw new Error('Something went wrong')
@@ -58,8 +58,24 @@ export async function subtractProductFromCart(product_id: {json: any}) {
     return res.json()
 }
 
-export async function removeProductFromCart(product_id: any) {
+export async function removeProductFromCart(product_id: {json: any}) {
     const res = await api.store["removeFromCart"].$delete(product_id)
+    if (!res.ok){
+        throw new Error('Something went wrong')
+    }
+    return res.json()
+}
+
+export async function checkout(cart: {json: any}) {
+    const res = await api.store.checkout.$put(cart)
+    if (!res.ok){
+        throw new Error('Something went wrong')
+    }
+    return res.json()
+}
+
+export async function changeUserRole() {
+    const res = await api.userRole.$put()
     if (!res.ok){
         throw new Error('Something went wrong')
     }

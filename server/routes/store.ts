@@ -5,6 +5,7 @@ import { getUser } from '../kinde.ts'
 import { User } from "../db/schema/user"
 import { Cart } from "../db/schema/cart"
 import { Product } from "../db/schema/product"
+import {mongo} from "mongoose";
 
 const productSchema = z.object({
     product_id: z.number(),
@@ -99,6 +100,34 @@ export const storeRoutes = new Hono()
         }
         return c.json(resultCart)
     })
+    .put('/checkout', getUser, zValidator('json', cartPostSchema), async(c)=>{
+        const cart = c.req.valid('json')
+        for (const i in cart){
+            const product = await Product.findOne({_id: cart[i].product._id})
+            if (product) {
+                product.stock -= cart[i].quantity
+                try{
+                    await product.save()
+                } catch(err){
+                    c.status(400)
+                    return c.json({})
+                }
+            }
+        }
+
+        const mongoUser = await User.findOne({user_id: c.var.user.id})
+        try{
+            await Cart.findOneAndDelete({user_id: mongoUser!._id})
+        }
+        catch(err){
+            c.status(400)
+            return c.json({})
+        }
+
+        const mongoCart = new Cart()
+        mongoCart.user_id = mongoUser!._id
+        return c.json([])
+    })
     .put('/addToCart', getUser, zValidator('json', cartPostSchema), async (c) => {
         const _id = c.req.valid('json')
         const {product_id, user_id} = await getUserProductId(_id, c.var.user.id)
@@ -133,7 +162,6 @@ export const storeRoutes = new Hono()
             if (product) resultCart.push({product: product, quantity: p.quantity})
         }
 
-        console.log(resultCart)
         return c.json(resultCart)
     })
     .put('/subtractFromCart', getUser, zValidator('json', cartPostSchema), async (c) => {
@@ -171,7 +199,6 @@ export const storeRoutes = new Hono()
             if (product) resultCart.push({product: product, quantity: p.quantity})
         }
 
-        console.log(resultCart)
         return c.json(resultCart)
     })
     .delete('/removeFromCart', getUser, zValidator('json', cartPostSchema), async (c) => {
@@ -193,6 +220,14 @@ export const storeRoutes = new Hono()
             existingProduct.deleteOne()
         } else{
             c.status(400)
+            return c.json({})
+        }
+
+        try{
+            await cart.save()
+            c.status(201)
+        }catch (err){
+            c.status(401)
             return c.json({})
         }
 
