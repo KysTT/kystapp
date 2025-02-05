@@ -34,11 +34,13 @@ export const expensesRoutes = new Hono()
         })
         try{
             await expense.save()
-            c.status(201)
+            c.status(200)
+            return c.json(expense)
         }catch(err){
             c.status(401)
+            return c.json({})
         }
-        return c.json(expense)
+
     })
     .get('/totalSpent', getUser, async (c)=>{
         const expenses = await Expenses.find({user_id: c.var.user.id})
