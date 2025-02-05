@@ -14,9 +14,10 @@ const ApiRoutes =  app.basePath('/api')
     .route('/', authRoutes)
     .route('/store', storeRoutes)
 
-// run built
-app.get('*', serveStatic({root: './frontend/dist'}))
-app.get('*', serveStatic({root: './frontend/dist/index.html'}))
+app.use('*', serveStatic({root: './frontend/dist/',}))
+app.notFound((c)=>{
+    return c.redirect('/')
+})
 
 export default app
 export type ApiRoutes = typeof ApiRoutes

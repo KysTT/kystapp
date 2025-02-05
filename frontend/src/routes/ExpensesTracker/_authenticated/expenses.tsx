@@ -51,7 +51,9 @@ function Expenses() {
 
   if (expenses.length === 0) {
     if ( !isPending) {
-      setExpenses(data)
+      if (data.length !==0){
+        setExpenses(data)
+      }
     }
   }
 

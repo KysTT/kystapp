@@ -23,7 +23,6 @@ import {Trash, PlusIcon, MinusIcon} from "lucide-react";
 import {useState} from "react";
 
 async function getCart() {
-    console.log('getting cart')
     const res = await api.store['cart'].$get()
     if (!res.ok) {
         throw new Error('Something went wrong')
@@ -129,7 +128,6 @@ function RenderCart() {
             if ( data.length !== 0 ) {
                 newData = false
                 setCart(data)
-                console.log('set data')
             }
         }
         newData = false

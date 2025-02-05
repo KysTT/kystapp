@@ -1,29 +1,25 @@
-version: '3.8'
-
 services:
   app:
     build: .
     ports:
       - "3000:3000"
     environment:
-      - KINDE_DOMAIN=${KINDE_DOMAIN}
-      - KINDE_CLIENT_ID=${KINDE_CLIENT_ID}
-      - KINDE_CLIENT_SECRET=${KINDE_CLIENT_SECRET}
-      - KINDE_REDIRECT_URI=${KINDE_REDIRECT_URI}
-      - KINDE_LOGOUT_REDIRECT_URI=${KINDE_LOGOUT_REDIRECT_URI}
+      #I do understand that exposing secrets like that is unacceptable in real prod environment,
+      #I just really don't want you to make a new Kinde account + app just to test this
+      - KINDE_DOMAIN=https://kystt.kinde.com
+      - KINDE_CLIENT_ID=c11492d1e62144f9b007a6a74e33be8f
+      - KINDE_CLIENT_SECRET=7ultQzQcEnOPAIIGdNGhOoQeCmUnaS39eGnjk7ztjTBYKfTidb
+      - KINDE_REDIRECT_URI=http://localhost:3000/api/callback
+      - KINDE_LOGOUT_REDIRECT_URI=http://localhost:3000
+      - MONGODB_URI=mongodb://root:example@app-mongo-1:27017/kyst-app?authSource=admin
       - NODE_ENV=production
-      - MONGODB_URI=${MONGODB_URI}
-      - STRIPE_KEY=${STRIPE_KEY}
     depends_on:
       - mongo
-    # For development:
-    # volumes:
-    #   - ./:/app/kystapp
-    #   - /app/kystapp/node_modules
-    #   - /app/kystapp/frontend/node_modules
 
   mongo:
     image: mongo:6.0
+    ports:
+      - "27017:27017"
     volumes:
       - mongo-data:/data/db
     environment:
