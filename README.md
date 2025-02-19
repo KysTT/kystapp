@@ -16,6 +16,26 @@ clone repo and run ``docker compose up --build``
 
 server will start on localhost:3000/
 
+# Used stack:
+
+backend:
+
+- bun js as better packet manager and ts / js runtime than node js
+
+- hono and zod for fast type safety routing
+
+- mongoose for MongoDB connectivity
+
+frontend:
+
+- vite
+
+- tailwind css + shadcnui
+
+- tanstack router to handle authentication per page
+
+- tanstack query to handle api calls
+
 #
 <details>
   
