@@ -1,6 +1,6 @@
 # How to build:
 
-install nodeJS, bun and mongoDB
+install bun and mongoDB
 
 clone github repo
 
