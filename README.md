@@ -37,7 +37,7 @@ frontend:
 - tanstack query to handle api calls
 
 # Prefer NestJS and Node? 
-Checkout dedicated [repo](https://github.com/KysTT/myappnest)!
+Checkout dedicated [repo](https://github.com/KysTT/myappnest)! (now with less bugs!)
 
 #
 <details>
